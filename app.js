@@ -3,12 +3,14 @@ const app = express();
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const methodOverride = require('method-override');
+const expressSanitizer = require('express-sanitizer');
 
 // APP CONFIG
-mongoose.connect('mongodb://localhost:27017/blog_app', { useNewUrlParser: true });
+mongoose.connect('mongodb://oskar:05k4rG@ds016138.mlab.com:16138/data', { useNewUrlParser: true });
 app.set('view engine', 'ejs');
 app.use(express.static('public'));
 app.use(bodyParser.urlencoded({extended: true}));
+app.use(expressSanitizer());
 app.use(methodOverride('_method'));
 
 // MONGOOSE/MODEL CONFIG
@@ -48,6 +50,7 @@ app.get('/blogs/new', (req, res) => {
 // CREATE ROUTE
 app.post('/blogs', (req, res) => {
     // create blog
+    req.body.blog.body = req.sanitize(req.body.blog.body);
     Blog.create(req.body.blog, (err, newBlog) => {
         if (err) {
             console.log(err);
@@ -80,6 +83,7 @@ app.get('/blogs/:id/edit', (req, res) => {
 });
 // UPDATE ROUTE
 app.put('/blogs/:id', (req, res) => {
+    req.body.blog.body = req.sanitize(req.body.blog.body);
     Blog.findOneAndUpdate(req.params.id, req.body.blog, (err, updatedBlog) => {
         if (err) {
             res.redirect('/blogs');
@@ -98,6 +102,6 @@ app.delete('/blogs/:id', (req, res) => {
         };
     });
 });
-app.listen(3000, () => {
+app.listen(process.env.PORT || 3000, () => {
     console.log('app started');
 });
